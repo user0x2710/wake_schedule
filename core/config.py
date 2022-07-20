@@ -1,3 +1,4 @@
+# flake8: noqa E501
 import os
 from typing import Dict, List
 
@@ -7,24 +8,31 @@ from pydantic import BaseModel, BaseSettings, RedisDsn
 class WakeParkConfigModel(BaseModel):
     name: str
     reservation_url: str
+    data_url: str
     date_field_name: str
+    date_field_format: str
+    data_field_key: str
     default_payload: Dict[str, str]
     headers: Dict[str, str]
     items: List[dict]
+
 
 class Config(BaseSettings):
     NAME: str = "WakeSchedule"
     ENV: str = "development"
     DEBUG: bool = True
-    REDIS_DSN: RedisDsn = 'redis://user:pass@localhost:6379/1'
+    REDIS_DSN: RedisDsn = 'redis://default:@localhost:6379/1'
     SHEDULE_ITEMS: Dict[str, WakeParkConfigModel] = {
         'wakeinn': {
             'name': 'WakeInn',
             'reservation_url': 'https://wakeinn.lt/rezervacija/',
+            'data_url': 'https://wakeinn.lt/wp-admin/admin-ajax.php',
             'default_payload': {
                 'action': 'get_timetable',
             },
             'date_field_name': 'data[date]',
+            'data_field_key': 'body',
+            'date_field_format': '%Y-%m-%d',
             'headers': {
                 'authority': 'wakeinn.lt',
                 'Accept': '*/*',
@@ -34,24 +42,32 @@ class Config(BaseSettings):
             },
             'items': [
                 {
-                    'name': 'wakeinn line 1',
+                    'name': 'Wakeinn line 1',
                     'description': '',
-                    'extra_payload': {'data[id]': '24',}
+                    'extra_payload': {'data[id]': '24'}
                 },
                 {
-                    'name': 'wakeinn lane 2',
+                    'name': 'Wakeinn lane 2',
                     'description': '',
-                    'extra_payload': {'data[id]': '25',}
+                    'extra_payload': {'data[id]': '25'}
+                },
+                {
+                    'name': 'Wakeinn lane 3',
+                    'description': '',
+                    'extra_payload': {'data[id]': '3'}
                 }
             ]
         },
         'splash': {
             'name': 'Splash Cable Park',
             'reservation_url': 'https://wake.splash.lt/e-bilietas/',
+            'data_url': 'https://wake.splash.lt/wp-admin/admin-ajax.php',
             'default_payload': {
                 'action': 'get_timetable',
             },
             'date_field_name': 'data[date]',
+            'date_field_format': '%Y-%m-%d',
+            'data_field_key': 'body',
             'headers': {
                 'authority': 'wake.splash.lt',
                 'Accept': '*/*',
@@ -61,17 +77,23 @@ class Config(BaseSettings):
             },
             'items': [
                 {
-                    'name': 'Splash line',
-                    'description': '',
-                    'extra_payload': {'data[id]': '61',}
+                    'name': '1 Sistema',
+                    'description': 'Two L size trampolines, Rail 2 Rail Transition',
+                    'extra_payload': {'data[id]': '61'}
+                },
+                {
+                    'name': '2 Sistema',
+                    'description': 'S size trampoline, M size trampoline, Fat Pipe 20m, Incline 8m, Nico 4',
+                    'extra_payload': {'data[id]': '62'}
                 },
             ]
         },
-}
+    }
 
 
 class DevelopmentConfig(Config):
     DEBUG: str = True
+
 
 class ProductionConfig(Config):
     DEBUG: str = False
