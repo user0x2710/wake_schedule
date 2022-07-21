@@ -1,5 +1,4 @@
-
-from datetime import datetime
+from datetime import datetime as dt
 
 import orjson
 import requests
@@ -11,14 +10,21 @@ from user_agent import generate_user_agent
 
 
 @app.task()
-def fetch_page(wp_id, item_index, date=None):
+def fetch_page(wp_id, item_index, date):
     settings = config.SHEDULE_ITEMS[wp_id]
     payload = settings.default_payload.copy()
     payload.update(settings.items[item_index]['extra_payload'])
 
-    payload[settings.date_field_name] = (
-        date or datetime.today().strftime(settings.date_field_format)
-    )
+    today = dt.today()
+    try:
+        if not date or dt.strptime(date, settings.date_field_format) < today:
+            payload[settings.date_field_name] = today.strftime(
+                settings.date_field_format)
+        else:
+            payload[settings.date_field_name] = date
+    except ValueError:
+        payload[settings.date_field_name] = today.strftime(
+            settings.date_field_format)
 
     headers = settings.headers.copy()
     headers['user-agent'] = generate_user_agent()
@@ -30,12 +36,14 @@ def fetch_page(wp_id, item_index, date=None):
     )
 
     if response.status_code != requests.codes.ok:
+        # TODO: retry
         return None
 
     try:
         data = orjson.loads(response.content.decode('utf-8-sig'))
         return data[settings.data_field_key]
     except (KeyError, ValueError):
+        # TODO: retry
         return None
 
 
@@ -65,15 +73,19 @@ def format_response(data, config):
     }
 
 
-def request_shedule(wp_id):
+def request_shedule(wp_id, date):
+    # TODO: check data in cache
     tasks_groups = []
     for i_index, i_config in enumerate(config.SHEDULE_ITEMS[wp_id].items):
         chain = (
-            fetch_page.s(wp_id, i_index) |
+            fetch_page.s(wp_id, i_index, date) |
             parse_page.s() |
             format_response.s(i_config)
         )
         tasks_groups.append(chain)
 
     if tasks_groups:
-        return group(*tasks_groups)
+        tasks = group(*tasks_groups).apply_async()
+        tasks.save()
+
+        return tasks

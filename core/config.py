@@ -43,18 +43,18 @@ class Config(BaseSettings):
             'items': [
                 {
                     'name': 'Wakeinn line 1',
-                    'description': '',
+                    'description': 'Two L-sized trampolines, Pipe-to-Pipe Bowl Stage, Rooftop 20m',
                     'extra_payload': {'data[id]': '24'}
                 },
                 {
                     'name': 'Wakeinn lane 2',
-                    'description': '',
+                    'description': 'Two M size trampolines, Flat Box 20m, Double Wave 20m',
                     'extra_payload': {'data[id]': '25'}
                 },
                 {
                     'name': 'Wakeinn lane 3',
-                    'description': '',
-                    'extra_payload': {'data[id]': '3'}
+                    'description': 'Beginner track without figures.',
+                    'extra_payload': {'data[id]': '26'}
                 }
             ]
         },
@@ -77,12 +77,12 @@ class Config(BaseSettings):
             },
             'items': [
                 {
-                    'name': '1 Sistema',
+                    'name': 'Splash line 1',
                     'description': 'Two L size trampolines, Rail 2 Rail Transition',
                     'extra_payload': {'data[id]': '61'}
                 },
                 {
-                    'name': '2 Sistema',
+                    'name': 'Splash line 2',
                     'description': 'S size trampoline, M size trampoline, Fat Pipe 20m, Incline 8m, Nico 4',
                     'extra_payload': {'data[id]': '62'}
                 },

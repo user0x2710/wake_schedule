@@ -1,5 +1,4 @@
 from functools import lru_cache
-
 from app.celery import celery_app
 from app.tasks.get_timetable import request_shedule
 from celery.result import GroupResult
@@ -24,11 +23,11 @@ def items(items: list = Depends(get_items)):
 
 
 @router.get("/{item_id}", response_class=ORJSONResponse, status_code=202)
-def get_item(item_id: str):
+def get_item(item_id: str, date: str | None = None):
     if item_id not in config.SHEDULE_ITEMS:
         raise HTTPException(status_code=404)
-    task = request_shedule(item_id).apply_async()
-    task.save()
+
+    task = request_shedule(item_id, date)
 
     return {"task_id": task.id}
 
